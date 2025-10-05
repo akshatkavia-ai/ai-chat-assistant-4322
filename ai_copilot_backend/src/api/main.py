@@ -11,7 +11,7 @@ env_path = Path(__file__).parent.parent.parent / '.env'
 load_dotenv(dotenv_path=env_path)
 
 # Read allowed origins from environment variable
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,https://vscode-internal-23134-beta.beta01.cloud.kavia.ai:3000").split(",")
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,https://vscode-internal-20837-beta.beta01.cloud.kavia.ai:4000").split(",")
 
 app = FastAPI(
     title="AI Copilot Backend",
@@ -20,10 +20,11 @@ app = FastAPI(
 )
 
 # Configure CORS to allow frontend origin
+# IMPORTANT: Middleware must be added immediately after FastAPI() creation and before routes
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[o.strip() for o in ALLOWED_ORIGINS if o.strip()],
-    allow_credentials=True,
+    allow_credentials=False,  # Set to False unless cookies/auth are required
     allow_methods=["*"],
     allow_headers=["*"],
 )

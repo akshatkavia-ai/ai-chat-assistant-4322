@@ -1,16 +1,72 @@
-from fastapi import FastAPI
+import os
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from .gemini_service import GeminiClient
 
-app = FastAPI()
+# Read allowed origins from environment variable
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
 
+app = FastAPI(
+    title="AI Copilot Backend",
+    description="Backend API for AI Copilot chat application with Gemini integration",
+    version="0.1.0"
+)
+
+# Configure CORS to allow frontend origin
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[o.strip() for o in ALLOWED_ORIGINS if o.strip()],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+class ChatRequest(BaseModel):
+    """Request model for chat endpoint."""
+    message: str
+
+class ChatResponse(BaseModel):
+    """Response model for chat endpoint."""
+    reply: str
+
+# PUBLIC_INTERFACE
 @app.get("/")
-def health_check():
+async def root():
+    """Root endpoint redirect to health check."""
     return {"message": "Healthy"}
+
+# PUBLIC_INTERFACE
+@app.get("/api/health")
+async def health():
+    """
+    Health check endpoint.
+    
+    Returns:
+        Status message indicating service health
+    """
+    return {"status": "ok"}
+
+# PUBLIC_INTERFACE
+@app.post("/api/chat", response_model=ChatResponse)
+async def chat(req: ChatRequest):
+    """
+    Chat endpoint for sending messages to AI assistant.
+    
+    Args:
+        req: ChatRequest containing the user's message
+        
+    Returns:
+        ChatResponse with AI-generated reply
+        
+    Raises:
+        HTTPException: If message is empty or invalid
+    """
+    if not req.message or not req.message.strip():
+        raise HTTPException(status_code=400, detail="Message cannot be empty")
+    
+    # Initialize Gemini client and get response
+    client = GeminiClient()
+    reply = await client.chat(req.message.strip())
+    
+    return ChatResponse(reply=reply)

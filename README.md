@@ -26,23 +26,12 @@ A modern full-stack AI Copilot web application that enables real-time chat with 
 - Error handling and loading states
 - Environment variable configuration for API endpoint
 
-## ⚠️ Important: Preview Environment URLs
-
-**Note**: The preview environment URLs can change between sessions. The current running services are at:
-- **Backend**: https://vscode-internal-20620-beta.beta01.cloud.kavia.ai:3001
-- **Frontend**: https://vscode-internal-20620-beta.beta01.cloud.kavia.ai:3000
-
-If you encounter connectivity issues, verify your actual preview URLs and update the `.env` files accordingly. See [CONNECTIVITY_FIX.md](CONNECTIVITY_FIX.md) and [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for details.
-
 ## Quick Start
 
 ### Prerequisites
 - Python 3.8+
 - Node.js 16+
 - Google Gemini API key (optional for testing, required for real AI responses)
-
-### ✅ Connectivity Status
-The frontend-backend connectivity has been verified and is working correctly. See [CONNECTIVITY_FIX.md](CONNECTIVITY_FIX.md) for details of recent fixes.
 
 ### Backend Setup
 
@@ -196,22 +185,6 @@ ai-chat-assistant-4344/
 
 ## Troubleshooting
 
-### Cannot connect to backend
-**Symptoms**: Frontend shows "Cannot connect to backend" error
-
-**Quick Fix**:
-1. Verify backend is running: `curl https://<your-host>:3001/api/health`
-2. Check frontend `.env` has correct backend URL
-3. See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for detailed steps
-
-### CORS Errors
-**Symptoms**: Browser console shows CORS policy errors
-
-**Quick Fix**:
-1. Check backend `.env` ALLOWED_ORIGINS includes your frontend URL
-2. Ensure URL matches exactly (protocol, host, port)
-3. Restart backend after changes
-
 ### Backend not connecting
 - Verify the backend is running on port 3001
 - Check the `.env` file in the backend directory
@@ -225,11 +198,6 @@ ai-chat-assistant-4344/
 ### Stub responses instead of AI
 - Add your Google Gemini API key to backend `.env`
 - Restart the backend service after updating the `.env` file
-
-### Preview Domain Changes
-If your preview domain changes, update both `.env` files and restart services. See [CONNECTIVITY_FIX.md](CONNECTIVITY_FIX.md) for instructions.
-
-For comprehensive troubleshooting, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
 
 ## Development
 

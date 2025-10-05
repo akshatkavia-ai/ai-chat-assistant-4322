@@ -30,25 +30,8 @@ GOOGLE_GEMINI_API_KEY=your_actual_api_key_here
 
 The preview environment has already started both services for you:
 
-- **Frontend**: https://vscode-internal-20620-beta.beta01.cloud.kavia.ai:3000
-- **Backend API**: https://vscode-internal-20620-beta.beta01.cloud.kavia.ai:3001/docs
-
-**Note**: If these URLs don't work, your preview domain may have changed. Check the running containers info for current URLs and update the `.env` files accordingly. See [CONNECTIVITY_FIX.md](CONNECTIVITY_FIX.md) for details.
-
-### Step 3.5: Verify Connectivity (Optional)
-
-To verify everything is connected properly:
-
-```bash
-# Check backend health
-curl https://vscode-internal-20620-beta.beta01.cloud.kavia.ai:3001/api/health
-# Expected: {"status":"ok"}
-```
-
-Or open the frontend URL in your browser and check the DevTools console (F12) for:
-```
-[API] Base URL: https://vscode-internal-20620-beta.beta01.cloud.kavia.ai:3001
-```
+- **Frontend**: https://vscode-internal-23134-beta.beta01.cloud.kavia.ai:3000
+- **Backend API**: https://vscode-internal-23134-beta.beta01.cloud.kavia.ai:3001/docs
 
 ### Step 4: Start Chatting!
 

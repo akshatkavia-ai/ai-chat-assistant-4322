@@ -1,8 +1,14 @@
 import os
+from pathlib import Path
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from .gemini_service import GeminiClient
+
+# Load environment variables from .env file in backend root directory
+env_path = Path(__file__).parent.parent.parent / '.env'
+load_dotenv(dotenv_path=env_path)
 
 # Read allowed origins from environment variable
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")

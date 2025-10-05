@@ -1,4 +1,10 @@
 import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables from .env file in backend root directory
+env_path = Path(__file__).parent.parent.parent / '.env'
+load_dotenv(dotenv_path=env_path)
 
 try:
     import google.generativeai as genai

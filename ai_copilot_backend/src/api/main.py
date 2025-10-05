@@ -12,8 +12,9 @@ env_path = Path(__file__).parent.parent.parent / '.env'
 load_dotenv(dotenv_path=env_path)
 
 # Read allowed origins from environment variable (comma-separated), trimming whitespace
-_raw_origins = os.getenv("ALLOWED_ORIGINS", "")
-ALLOWED_ORIGINS = [o.strip() for o in _raw_origins.split(",") if o.strip()] if _raw_origins else []
+# Default to the specified origin if not set
+raw = os.getenv('ALLOWED_ORIGINS', 'https://vscode-internal-26947-beta.beta01.cloud.kavia.ai:4000')
+ALLOWED_ORIGINS = [o.strip() for o in raw.split(',') if o.strip()]
 
 # Development mode detection
 DEV_MODE = os.getenv("ENV", "development").lower() == "development"

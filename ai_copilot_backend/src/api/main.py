@@ -1,11 +1,18 @@
 import os
 import re
+import logging
 from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from .gemini_service import GeminiClient
+
+# Configure module-level logger (concise, safe logging)
+logger = logging.getLogger(__name__)
+if not logger.handlers:
+    # Basic configuration only if not set by the runtime
+    logging.basicConfig(level=logging.INFO)
 
 # Load environment variables from .env file in backend root directory
 env_path = Path(__file__).parent.parent.parent / '.env'
@@ -15,6 +22,9 @@ load_dotenv(dotenv_path=env_path)
 # Default to the specified origin if not set
 raw = os.getenv('ALLOWED_ORIGINS', 'https://vscode-internal-26947-beta.beta01.cloud.kavia.ai:4000')
 ALLOWED_ORIGINS = [o.strip() for o in raw.split(',') if o.strip()]
+
+# Log resolved origins immediately after env is loaded (no secrets)
+logger.info("CORS ALLOWED_ORIGINS (env-load): %s", ALLOWED_ORIGINS)
 
 # Development mode detection
 DEV_MODE = os.getenv("ENV", "development").lower() == "development"
@@ -30,7 +40,7 @@ configured_origins = ALLOWED_ORIGINS
 
 # Dev-friendly CORS: In development, also allow specific preview domains pattern for ports 3000/4000
 if DEV_MODE:
-    print("[CORS] Development mode: enabling preview-domain allowance for ports 3000/4000 matching vscode-internal-<id>-beta.beta01.cloud.kavia.ai")
+    logger.info("[CORS] Development mode: enabling preview-domain allowance for ports 3000/4000 matching vscode-internal-<id>-beta.beta01.cloud.kavia.ai")
     
     # Middleware with custom origin validation (adds headers for matched dev origins too)
     @app.middleware("http")
@@ -45,7 +55,7 @@ if DEV_MODE:
             pattern = r'^https://vscode-internal-\d+-beta\.beta01\.cloud\.kavia\.ai:(3000|4000)$'
             if re.match(pattern, origin):
                 allowed = True
-                print(f"[CORS] Dev pattern match: {origin}")
+                logger.info("[CORS] Dev pattern match allowed for origin: %s", origin)
         
         response = await call_next(request)
         
@@ -69,6 +79,15 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["*"],
 )
+
+# Log again on application startup to confirm runtime value
+@app.on_event("startup")
+async def log_cors_config_startup():
+    """
+    Confirm the active CORS configuration at application startup.
+    Prints only the list of allowed origins, no secrets.
+    """
+    logger.info("CORS ALLOWED_ORIGINS (startup): %s", configured_origins)
 
 class ChatRequest(BaseModel):
     """Request model for chat endpoint."""
@@ -118,7 +137,7 @@ async def chat(req: ChatRequest):
     
     # Log which model is being used (without exposing API key)
     if client.usable:
-        print(f"[INFO] Using Gemini model: {client.actual_model}")
+        logger.info("Using Gemini model: %s", client.actual_model)
     
     reply = await client.chat(req.message.strip())
     

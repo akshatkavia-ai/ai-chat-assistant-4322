@@ -20,3 +20,6 @@ anyio==4.9.0
 
 # Production server (optional)
 gunicorn==21.2.0
+
+# Enhanced logging (optional)
+loguru==0.7.2

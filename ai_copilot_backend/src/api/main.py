@@ -73,6 +73,11 @@ async def chat(req: ChatRequest):
     
     # Initialize Gemini client and get response
     client = GeminiClient()
+    
+    # Log which model is being used (without exposing API key)
+    if client.usable:
+        print(f"[INFO] Using Gemini model: {client.actual_model}")
+    
     reply = await client.chat(req.message.strip())
     
     return ChatResponse(reply=reply)

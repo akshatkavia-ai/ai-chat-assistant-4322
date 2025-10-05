@@ -45,8 +45,25 @@ Create a `.env` file in the backend root directory with the following variables:
 
 - `GOOGLE_GEMINI_API_KEY` - (Required for real AI responses) Your Google Gemini API key
   - Get your key from: https://makersuite.google.com/app/apikey
+- `GEMINI_MODEL` - (Optional) Specific Gemini model to use
+  - Default: `gemini-pro`
+  - Supported models: `gemini-pro`, `gemini-1.5-flash`, `gemini-1.5-pro`
+  - If the specified model is not found (404), the service will automatically fall back to `gemini-pro` or `gemini-1.5-flash`
 - `ALLOWED_ORIGINS` - (Optional) Comma-separated list of allowed CORS origins
   - Default: `http://localhost:3000`
+
+### Supported Models
+
+The service supports the following Gemini models (compatible with google-generativeai SDK 0.7.2):
+
+1. **gemini-2.0-flash** (default) - Fast and versatile multimodal model, stable release
+2. **gemini-2.5-flash** - Mid-size multimodal model with up to 1 million tokens
+3. **gemini-2.5-pro** - Advanced stable model with enhanced capabilities
+
+The service includes automatic fallback logic: if the configured model returns a 404 error, it will automatically try fallback models in sequence until one succeeds.
+
+**Note**: Older model names like `gemini-pro` and `gemini-1.5-pro` are not supported in the current API version. Use `gemini-2.0-flash` or newer models instead.
+=======
 
 ## Setup
 

@@ -17,7 +17,7 @@ API_KEY = os.getenv("GOOGLE_GEMINI_API_KEY")
 class GeminiClient:
     """Service for interacting with Google Gemini API."""
     
-    def __init__(self, model_name: str = "gemini-pro"):
+    def __init__(self, model_name: str = "gemini-1.5-pro"):
         self.model_name = model_name
         self._usable = GEMINI_AVAILABLE and bool(API_KEY)
         if self._usable:

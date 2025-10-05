@@ -50,9 +50,7 @@ Create a `.env` file in the backend root directory with the following variables:
   - Supported models: `gemini-pro`, `gemini-1.5-flash`, `gemini-1.5-pro`
   - If the specified model is not found (404), the service will automatically fall back to `gemini-pro` or `gemini-1.5-flash`
 - `ALLOWED_ORIGINS` - (Optional) Comma-separated list of allowed CORS origins
-  - Default includes: `http://localhost:3000`, `http://127.0.0.1:3000`, and common preview domains.
-  - For your environment, set this explicitly to your frontend URL(s), e.g.:
-    `ALLOWED_ORIGINS=https://vscode-internal-20620-beta.beta01.cloud.kavia.ai:3000`
+  - Default: `http://localhost:3000`
 
 ### Supported Models
 

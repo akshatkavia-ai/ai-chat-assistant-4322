@@ -11,8 +11,9 @@ from .gemini_service import GeminiClient
 env_path = Path(__file__).parent.parent.parent / '.env'
 load_dotenv(dotenv_path=env_path)
 
-# Read allowed origins from environment variable
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,https://vscode-internal-38356-beta.beta01.cloud.kavia.ai:3000").split(",")
+# Read allowed origins from environment variable (comma-separated), trimming whitespace
+_raw_origins = os.getenv("ALLOWED_ORIGINS", "")
+ALLOWED_ORIGINS = [o.strip() for o in _raw_origins.split(",") if o.strip()] if _raw_origins else []
 
 # Development mode detection
 DEV_MODE = os.getenv("ENV", "development").lower() == "development"
@@ -23,24 +24,23 @@ app = FastAPI(
     version="0.1.0"
 )
 
-# Parse configured origins
-configured_origins = [o.strip() for o in ALLOWED_ORIGINS if o.strip()]
+# Parse configured origins (already trimmed)
+configured_origins = ALLOWED_ORIGINS
 
-# Dev-friendly CORS: In development, also allow *.beta01.cloud.kavia.ai with ports 3000/4000
+# Dev-friendly CORS: In development, also allow specific preview domains pattern for ports 3000/4000
 if DEV_MODE:
-    print("[CORS] Development mode: allowing *.beta01.cloud.kavia.ai with ports 3000/4000")
+    print("[CORS] Development mode: enabling preview-domain allowance for ports 3000/4000 matching vscode-internal-<id>-beta.beta01.cloud.kavia.ai")
     
-    # Middleware with custom origin validation
+    # Middleware with custom origin validation (adds headers for matched dev origins too)
     @app.middleware("http")
     async def cors_dev_middleware(request, call_next):
         origin = request.headers.get("origin")
         
-        # Check if origin matches dev pattern
+        # Check if origin matches configured list or dev pattern
         allowed = False
-        if origin in configured_origins:
+        if origin and origin in configured_origins:
             allowed = True
         elif origin and DEV_MODE:
-            # Allow preview domains with ports 3000 or 4000
             pattern = r'^https://vscode-internal-\d+-beta\.beta01\.cloud\.kavia\.ai:(3000|4000)$'
             if re.match(pattern, origin):
                 allowed = True
@@ -58,7 +58,8 @@ if DEV_MODE:
         
         return response
 
-# Standard CORS middleware (as fallback and for OPTIONS handling)
+# Standard CORS middleware (for OPTIONS handling and baseline CORS)
+# Ensure we don't use wildcard '*' when allow_credentials=True; use the env-driven list.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=configured_origins,

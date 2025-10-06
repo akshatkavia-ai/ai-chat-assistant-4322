@@ -80,7 +80,7 @@ if DEV_MODE:
             allowed = True
             logger.debug(f"Origin allowed by config: {origin}")
         elif origin:
-            # Check if origin matches preview domain pattern
+            # Allow preview origins on ports 3000 and 4000 for beta01.cloud.kavia.ai
             pattern = r"^https://vscode-internal-\d+-beta\.beta01\.cloud\.kavia\.ai:(3000|4000)$"
             if re.match(pattern, origin):
                 allowed = True
@@ -311,6 +311,23 @@ async def chat(req: ChatRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to generate response: {str(e)}"
         )
+
+# PUBLIC_INTERFACE
+@app.post("/chat", response_model=ChatResponse, tags=["Chat"])
+async def chat_alias(req: ChatRequest):
+    """
+    Alias endpoint for clients using /chat instead of /api/chat.
+
+    Forwards the request to the primary /api/chat handler to maintain compatibility
+    with examples or local code that expect /chat.
+
+    Args:
+        req: ChatRequest containing the user's message
+
+    Returns:
+        ChatResponse as produced by the main /api/chat endpoint
+    """
+    return await chat(req)
 
 
 # ==================== Error Handlers ====================

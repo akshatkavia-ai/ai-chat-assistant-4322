@@ -25,6 +25,8 @@ Health check endpoint to verify service status.
 ### POST /api/chat
 Send a message to the AI assistant and receive a response.
 
+Alias: POST /chat (for clients expecting /chat)
+
 **Request Body:**
 ```json
 {

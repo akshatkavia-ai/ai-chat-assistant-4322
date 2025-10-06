@@ -241,6 +241,22 @@ async def health():
 
 
 # PUBLIC_INTERFACE
+@app.options("/api/health", tags=["Health"])
+async def health_options():
+    """
+    OPTIONS preflight handler for /api/health to support CORS diagnostics.
+    """
+    return JSONResponse(status_code=200, content={"status": "ok"})
+
+# PUBLIC_INTERFACE
+@app.options("/api/chat", tags=["Chat"])
+async def chat_options():
+    """
+    OPTIONS preflight handler for /api/chat to support CORS diagnostics.
+    """
+    return JSONResponse(status_code=200, content={"ok": True})
+
+# PUBLIC_INTERFACE
 @app.post("/api/chat", response_model=ChatResponse, tags=["Chat"])
 async def chat(req: ChatRequest):
     """

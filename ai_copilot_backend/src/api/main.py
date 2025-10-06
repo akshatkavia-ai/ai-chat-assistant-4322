@@ -81,6 +81,7 @@ if DEV_MODE:
             logger.debug(f"Origin allowed by config: {origin}")
         elif origin:
             # Allow preview origins on ports 3000 and 4000 for beta01.cloud.kavia.ai
+            # Includes both React dev (3000) and preview (4000) ports
             pattern = r"^https://vscode-internal-\d+-beta\.beta01\.cloud\.kavia\.ai:(3000|4000)$"
             if re.match(pattern, origin):
                 allowed = True

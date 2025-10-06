@@ -5,11 +5,10 @@ Main application module providing REST API endpoints for AI chat functionality.
 Includes Gemini integration, CORS configuration, and comprehensive error handling.
 """
 import os
-import re
 import time
 import logging
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List
 from dotenv import load_dotenv
 
 from fastapi import FastAPI, HTTPException, Request, status
@@ -33,24 +32,13 @@ logger.info(f"Loading environment from: {env_path}")
 
 # Resolve allowed origins from environment
 env_origins_str = os.getenv("ALLOWED_ORIGINS", "").strip()
-env_origins = [origin.strip() for origin in env_origins_str.split(",") if origin.strip()]
+env_origins: List[str] = [origin.strip() for origin in env_origins_str.split(",") if origin.strip()]
 
-# Default fallback origin for development
-default_origin = "http://localhost:3000"
+# Fallback to the exact provided preview origin if none set via env
+fallback_exact_origin = "https://vscode-internal-42716-beta.beta01.cloud.kavia.ai:4000"
+ALLOWED_ORIGINS: List[str] = env_origins if env_origins else [fallback_exact_origin]
 
-# Use env origins if provided, otherwise use default
-ALLOWED_ORIGINS = env_origins if env_origins else [default_origin]
-
-logger.info(f"ALLOWED_ORIGINS configured: {ALLOWED_ORIGINS}")
-
-# Development mode detection
-ENV_MODE = os.getenv("ENV", "development").lower()
-DEV_MODE = ENV_MODE == "development"
-
-if DEV_MODE:
-    logger.info("Running in DEVELOPMENT mode - enhanced CORS enabled")
-else:
-    logger.info("Running in PRODUCTION mode")
+logger.info(f"ALLOWED_ORIGINS configured (strict): {ALLOWED_ORIGINS}")
 
 # Initialize FastAPI application
 app = FastAPI(
@@ -62,52 +50,13 @@ app = FastAPI(
     openapi_url="/openapi.json"
 )
 
-# In development mode, add middleware to handle dynamic preview domains
-if DEV_MODE:
-    @app.middleware("http")
-    async def dev_cors_middleware(request: Request, call_next):
-        """
-        Development CORS middleware for handling dynamic preview domains.
-        
-        Allows origins matching the pattern:
-        https://vscode-internal-{port}-beta.beta01.cloud.kavia.ai:{3000|4000}
-        """
-        origin = request.headers.get("origin", "")
-        allowed = False
-        
-        # Check if origin is in configured list
-        if origin in ALLOWED_ORIGINS:
-            allowed = True
-            logger.debug(f"Origin allowed by config: {origin}")
-        elif origin:
-            # Allow preview origins on ports 3000 and 4000 for beta01.cloud.kavia.ai
-            # Includes both React dev (3000) and preview (4000) ports
-            pattern = r"^https://vscode-internal-\d+-beta\.beta01\.cloud\.kavia\.ai:(3000|4000)$"
-            if re.match(pattern, origin):
-                allowed = True
-                logger.debug(f"Origin allowed by dev pattern: {origin}")
-        
-        # Process request
-        response = await call_next(request)
-        
-        # Add CORS headers if allowed
-        if allowed:
-            response.headers["Access-Control-Allow-Origin"] = origin
-            response.headers["Access-Control-Allow-Credentials"] = "true"
-            response.headers["Access-Control-Allow-Methods"] = "DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT"
-            response.headers["Access-Control-Allow-Headers"] = "*"
-            response.headers["Access-Control-Expose-Headers"] = "*"
-        
-        return response
-
-# Standard CORS middleware with explicit allowlist
+# Strict CORS middleware: only explicit origins, limited methods/headers as requested
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
-    expose_headers=["*"]
 )
 
 # Request logging middleware
@@ -115,20 +64,11 @@ app.add_middleware(
 async def log_requests(request: Request, call_next):
     """Log all incoming requests and their processing time."""
     start_time = time.time()
-    
-    # Log request
     logger.info(f"Request: {request.method} {request.url.path}")
-    
-    # Process request
     response = await call_next(request)
-    
-    # Calculate processing time
     process_time = time.time() - start_time
     logger.info(f"Response: {response.status_code} (took {process_time:.3f}s)")
-    
-    # Add processing time to response headers
     response.headers["X-Process-Time"] = f"{process_time:.3f}"
-    
     return response
 
 
@@ -365,9 +305,7 @@ async def startup_event():
     logger.info("=" * 50)
     logger.info("AI Copilot Backend Starting Up")
     logger.info("=" * 50)
-    logger.info(f"Environment: {ENV_MODE}")
-    logger.info(f"CORS Origins: {ALLOWED_ORIGINS}")
-    logger.info(f"Dev Mode: {DEV_MODE}")
+    logger.info(f"CORS Origins (strict): {ALLOWED_ORIGINS}")
     
     # Check Gemini configuration
     client = GeminiClient()

@@ -48,11 +48,14 @@ Create a `.env` file in the backend root directory with the following variables:
 - `GOOGLE_GEMINI_API_KEY` - (Required for real AI responses) Your Google Gemini API key
   - Get your key from: https://makersuite.google.com/app/apikey
 - `GEMINI_MODEL` - (Optional) Specific Gemini model to use
-  - Default: `gemini-pro`
-  - Supported models: `gemini-pro`, `gemini-1.5-flash`, `gemini-1.5-pro`
-  - If the specified model is not found (404), the service will automatically fall back to `gemini-pro` or `gemini-1.5-flash`
-- `ALLOWED_ORIGINS` - (Optional) Comma-separated list of allowed CORS origins
-  - Default: `http://localhost:3000`
+  - Default: `gemini-2.0-flash`
+  - Supported models: `gemini-2.0-flash`, `gemini-2.5-flash`, `gemini-2.5-pro`
+  - Automatic fallback is implemented if a model is unavailable
+- `ALLOWED_ORIGINS` - (Required in preview) Strict CORS origin allowlist
+  - Set to a single exact origin for the current frontend preview, for example:
+    - `ALLOWED_ORIGINS=https://vscode-internal-42716-beta.beta01.cloud.kavia.ai:4000`
+  - If unset, the backend falls back to the exact origin above.
+  - Must match exactly (protocol, host, port). No wildcards.
 
 ### Supported Models
 
